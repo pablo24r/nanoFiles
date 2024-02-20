@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
 
 import es.um.redes.nanoFiles.udp.message.DirMessage;
@@ -93,12 +94,33 @@ public class DirectoryConnector {
 			System.exit(-1);
 		}
 		/*
-		 * TODO: Enviar datos en un datagrama al directorio y recibir una respuesta. El
+		 * Enviar datos en un datagrama al directorio y recibir una respuesta. El
 		 * array devuelto debe contener únicamente los datos recibidos, *NO* el búfer de
 		 * recepción al completo.
 		 */
+		
+		// Enviamos los datos del datagrama recibido como parametro
 		DatagramPacket packetToSever = new DatagramPacket(requestData, requestData.length, directoryAddress);
 		socket.send(packetToSever);
+		
+		// Creamos un datagrama asociado al búfer de recepción
+		DatagramPacket packetFromServer = new DatagramPacket(responseData, responseData.length);
+
+		// Tratamos de recibir la respuesta
+		socket.receive(packetFromServer);
+		
+		// Obtener los datos del paquete
+        byte[] receivedData = packetFromServer.getData();
+        int length = packetFromServer.getLength();
+
+        // Convertir los datos a una cadena 
+        String messageFromServer = new String(receivedData, 0, length);
+		
+		// Almaceno en el response
+		response = messageFromServer.getBytes();
+		//System.out.println("LA RESPUESTA ES " + messageFromServer);
+		
+		
 		/*
 		 * TODO: Una vez el envío y recepción asumiendo un canal confiable (sin
 		 * pérdidas) esté terminado y probado, debe implementarse un mecanismo de
@@ -131,19 +153,22 @@ public class DirectoryConnector {
 	 * recepción de mensajes sin formatear ("en crudo")
 	 * 
 	 * @return verdadero si se ha enviado un datagrama y recibido una respuesta
+	 * @throws IOException 
 	 */
-	public boolean testSendAndReceive() {
+	public boolean testSendAndReceive() throws IOException {
 		/*
-		 * TODO: Probar el correcto funcionamiento de sendAndReceiveDatagrams. Se debe
+		 * Probar el correcto funcionamiento de sendAndReceiveDatagrams. Se debe
 		 * enviar un datagrama con la cadena "login" y comprobar que la respuesta
 		 * recibida es "loginok". En tal caso, devuelve verdadero, falso si la respuesta
 		 * no contiene los datos esperados.
 		 */
-		boolean success = false;
-
-
-
-		return success;
+		String string = "login";
+		byte[] mensaje = string.getBytes();
+		byte[] respuesta = sendAndReceiveDatagrams(mensaje);
+		
+		String messageFromServer = new String(respuesta, 0, respuesta.length);		
+		
+		return messageFromServer.equals("loginok");
 	}
 
 	public InetSocketAddress getDirectoryAddress() {
