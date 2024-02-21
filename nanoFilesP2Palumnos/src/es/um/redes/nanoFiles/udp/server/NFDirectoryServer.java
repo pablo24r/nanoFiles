@@ -126,8 +126,9 @@ public class NFDirectoryServer {
 				 * el buffer de recepción
 				 */
 				messageFromClient = new String(receptionBuffer,0, dataLength);
-
-				if (NanoFiles.testMode) { // En modo de prueba (mensajes en "crudo", boletín UDP)
+				System.out.println("Mensaje CLI->SER: "+messageFromClient);
+				
+					if (NanoFiles.testMode) { // En modo de prueba (mensajes en "crudo", boletín UDP)
 					System.out.println("[testMode] Contents interpreted as " + dataLength + "-byte String: \""
 							+ messageFromClient + "\"");
 					/*
@@ -136,7 +137,6 @@ public class NFDirectoryServer {
 					 * cadena "loginok". Si el mensaje recibido no es "login", se informa del error
 					 * y no se envía ninguna respuesta.
 					 */
-					// System.out.println("EL MENSAJE RECIBIDO POR EL SERVIDOR ES: "+messageFromClient);
 					if(messageFromClient.equals("login")) {
 
 						/******** SEND TO CLIENT **********/
@@ -164,6 +164,33 @@ public class NFDirectoryServer {
 					 * Después, usar la cadena para construir un objeto DirMessage que contenga en
 					 * sus atributos los valores del mensaje (fromString).
 					 */
+					if(messageFromClient.contains("login")) {
+						String[] parts = messageFromClient.split("&");
+		                String nickname = parts[1];
+					
+		                if(nicks.containsKey(nickname)) {
+		                	String messageToClient = "login_failed:-1";
+							byte[] dataToClient = messageToClient.getBytes();
+							
+							// Enviamos el datagrama
+							DatagramPacket packetToClient = new DatagramPacket(dataToClient, dataToClient.length, clientAddr);
+							socket.send(packetToClient);
+		                }
+		                else {
+		                	int sessionKey = random.nextInt(10000);
+			                nicks.put(nickname, sessionKey);
+							
+							String messageToClient = "loginok&" + sessionKey;
+							// Obtenemos el array de bytes en que se codifica este string
+							byte[] dataToClient = messageToClient.getBytes();
+							
+							// Enviamos el datagrama
+							DatagramPacket packetToClient = new DatagramPacket(dataToClient, dataToClient.length, clientAddr);
+							socket.send(packetToClient);
+		                }
+						
+					}
+					
 					/*
 					 * TODO: Llamar a buildResponseFromRequest para construir, a partir del objeto
 					 * DirMessage con los valores del mensaje de petición recibido, un nuevo objeto

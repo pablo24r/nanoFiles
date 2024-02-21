@@ -54,19 +54,16 @@ public class DirectoryConnector {
 
 	public DirectoryConnector(String address) throws IOException {
 		/*
-		 * Convertir el nombre de host 'address' a InetAddress y guardar la
-		 * dirección de socket (address:DIRECTORY_PORT) del directorio en el atributo
+		 * Convertir el nombre de host 'address' a InetAddress y guardar la dirección de
+		 * socket (address:DIRECTORY_PORT) del directorio en el atributo
 		 * directoryAddress, para poder enviar datagramas a dicho destino.
 		 */
 		InetAddress ip = InetAddress.getByName(address);
-		this.directoryAddress = new InetSocketAddress(ip,DIRECTORY_PORT);
+		this.directoryAddress = new InetSocketAddress(ip, DIRECTORY_PORT);
 		/*
-		 * Crea el socket UDP en cualquier puerto para enviar datagramas al
-		 * directorio
+		 * Crea el socket UDP en cualquier puerto para enviar datagramas al directorio
 		 */
 		this.socket = new DatagramSocket();
-
-
 
 	}
 
@@ -75,7 +72,7 @@ public class DirectoryConnector {
 	 * 
 	 * @param requestData los datos a enviar al directorio (mensaje de solicitud)
 	 * @return los datos recibidos del directorio (mensaje de respuesta)
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	private byte[] sendAndReceiveDatagrams(byte[] requestData) throws IOException {
 		byte responseData[] = new byte[DirMessage.PACKET_MAX_SIZE];
@@ -85,7 +82,6 @@ public class DirectoryConnector {
 			System.err.println(
 					"DirectoryConnector.sendAndReceiveDatagrams: make sure constructor initializes field \"directoryAddress\"");
 			System.exit(-1);
-
 		}
 		if (socket == null) {
 			System.err.println("DirectoryConnector.sendAndReceiveDatagrams: UDP socket is null!");
@@ -94,58 +90,56 @@ public class DirectoryConnector {
 			System.exit(-1);
 		}
 		/*
-		 * Enviar datos en un datagrama al directorio y recibir una respuesta. El
-		 * array devuelto debe contener únicamente los datos recibidos, *NO* el búfer de
+		 * Enviar datos en un datagrama al directorio y recibir una respuesta. El array
+		 * devuelto debe contener únicamente los datos recibidos, *NO* el búfer de
 		 * recepción al completo.
 		 */
-		
-		// Enviamos los datos del datagrama recibido como parametro
-		DatagramPacket packetToSever = new DatagramPacket(requestData, requestData.length, directoryAddress);
-		socket.send(packetToSever);
-		
-		// Creamos un datagrama asociado al búfer de recepción
-		DatagramPacket packetFromServer = new DatagramPacket(responseData, responseData.length);
 
-		// Tratamos de recibir la respuesta
-		socket.receive(packetFromServer);
-		
-		// Obtener los datos del paquete
-        byte[] receivedData = packetFromServer.getData();
-        int length = packetFromServer.getLength();
+		// Inicializar contador de intentos
+		int attempts = 0;
 
-        // Convertir los datos a una cadena 
-        String messageFromServer = new String(receivedData, 0, length);
-		
-		// Almaceno en el response
-		response = messageFromServer.getBytes();
-		//System.out.println("LA RESPUESTA ES " + messageFromServer);
-		
-		
-		/*
-		 * TODO: Una vez el envío y recepción asumiendo un canal confiable (sin
-		 * pérdidas) esté terminado y probado, debe implementarse un mecanismo de
-		 * retransmisión usando temporizador, en caso de que no se reciba respuesta en
-		 * el plazo de TIMEOUT. En caso de salte el timeout, se debe reintentar como
-		 * máximo en MAX_NUMBER_OF_ATTEMPTS ocasiones.
-		 */
-		/*
-		 * TODO: Las excepciones que puedan lanzarse al leer/escribir en el socket deben
-		 * ser capturadas y tratadas en este método. Si se produce una excepción de
-		 * entrada/salida (error del que no es posible recuperarse), se debe informar y
-		 * terminar el programa.
-		 */
-		/*
-		 * NOTA: Las excepciones deben tratarse de la más concreta a la más genérica.
-		 * SocketTimeoutException es más concreta que IOException.
-		 */
+		do {
+			try {
+				// Configurar el tiempo de espera para recibir una respuesta
+				socket.setSoTimeout(TIMEOUT);
 
+				// Enviar datos en un datagrama al directorio
+				DatagramPacket packetToServer = new DatagramPacket(requestData, requestData.length, directoryAddress);
+				socket.send(packetToServer);
 
+				// Crear un datagrama asociado al búfer de recepción
+				DatagramPacket packetFromServer = new DatagramPacket(responseData, responseData.length);
 
-		if (response != null && response.length == responseData.length) {
-			System.err.println("Your response is as large as the datagram reception buffer!!\n"
-					+ "You must extract from the buffer only the bytes that belong to the datagram!");
-		}
+				// Tratar de recibir la respuesta
+				socket.receive(packetFromServer);
+
+				// Obtener los datos del paquete
+				byte[] receivedData = packetFromServer.getData();
+				int length = packetFromServer.getLength();
+
+				// Convertir los datos a una cadena
+				String messageFromServer = new String(receivedData, 0, length);
+
+				// Almacenar en el response
+				response = messageFromServer.getBytes();
+
+			} catch (SocketTimeoutException e) {
+				// Incrementar el contador de intentos en caso de timeout
+				attempts++;
+
+				// Mostrar información sobre el reenvío
+				System.out.println("Timeout #" + attempts + ". Retrying...");
+
+				// Manejar el caso de exceder el número máximo de intentos
+				if (attempts >= MAX_NUMBER_OF_ATTEMPTS) {
+					System.err.println("Exceeded maximum number of attempts. Aborting.");
+					System.exit(-1);
+				}
+			}
+		} while (response == null && attempts < MAX_NUMBER_OF_ATTEMPTS);
+
 		return response;
+
 	}
 
 	/**
@@ -153,21 +147,21 @@ public class DirectoryConnector {
 	 * recepción de mensajes sin formatear ("en crudo")
 	 * 
 	 * @return verdadero si se ha enviado un datagrama y recibido una respuesta
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public boolean testSendAndReceive() throws IOException {
 		/*
-		 * Probar el correcto funcionamiento de sendAndReceiveDatagrams. Se debe
-		 * enviar un datagrama con la cadena "login" y comprobar que la respuesta
-		 * recibida es "loginok". En tal caso, devuelve verdadero, falso si la respuesta
-		 * no contiene los datos esperados.
+		 * Probar el correcto funcionamiento de sendAndReceiveDatagrams. Se debe enviar
+		 * un datagrama con la cadena "login" y comprobar que la respuesta recibida es
+		 * "loginok". En tal caso, devuelve verdadero, falso si la respuesta no contiene
+		 * los datos esperados.
 		 */
 		String string = "login";
-		byte[] mensaje = string.getBytes();
-		byte[] respuesta = sendAndReceiveDatagrams(mensaje);
-		
-		String messageFromServer = new String(respuesta, 0, respuesta.length);		
-		
+		byte[] menssage = string.getBytes();
+		byte[] respuesta = sendAndReceiveDatagrams(menssage);
+
+		String messageFromServer = new String(respuesta, 0, respuesta.length);
+		//System.out.println("MENSAJE SER->CLI ES:" + messageFromServer);
 		return messageFromServer.equals("loginok");
 	}
 
@@ -186,23 +180,49 @@ public class DirectoryConnector {
 	 * @param nickname El nickname del usuario a registrar
 	 * @return La clave de sesión asignada al usuario que acaba de loguearse, o -1
 	 *         en caso de error
+	 * @throws IOException
 	 */
-	public boolean logIntoDirectory(String nickname) {
+	public boolean logIntoDirectory(String nickname) throws IOException {
 		assert (sessionKey == INVALID_SESSION_KEY);
 		boolean success = false;
 		// TODO: 1.Crear el mensaje a enviar (objeto DirMessage) con atributos adecuados
-		// (operation, etc.) NOTA: Usar como operaciones las constantes definidas en la clase
+		// (operation, etc.) NOTA: Usar como operaciones las constantes definidas en la
+		// clase
 		// DirMessageOps
 		// TODO: 2.Convertir el objeto DirMessage a enviar a un string (método toString)
 		// TODO: 3.Crear un datagrama con los bytes en que se codifica la cadena
+		String loginMessage = "login&" + nickname;
+		byte[] menssageToServer = loginMessage.getBytes();
+
 		// TODO: 4.Enviar datagrama y recibir una respuesta (sendAndReceiveDatagrams).
-		// TODO: 5.Convertir respuesta recibida en un objeto DirMessage (método
-		// DirMessage.fromString)
-		// TODO: 6.Extraer datos del objeto DirMessage y procesarlos (p.ej., sessionKey)
+		try {
+			byte[] responseData = sendAndReceiveDatagrams(menssageToServer);
+			// TODO: 5.Convertir respuesta recibida en un objeto DirMessage (método
+			// DirMessage.fromString)
+			String messageFromServer = new String(responseData, 0, responseData.length);
+			System.out.println("Mensaje SER->CLI: " + messageFromServer);
+			// TODO: 6.Extraer datos del objeto DirMessage y procesarlos (p.ej., sessionKey)
+			if (messageFromServer.startsWith("loginok&")) {
+                // Extraer y convertir la sessionKey a entero
+                String[] parts = messageFromServer.split("&");
+                int receivedSessionKey = Integer.parseInt(parts[1]);
+
+                // Guardar la sessionKey obtenida en el atributo sessionKey
+                sessionKey = receivedSessionKey;
+
+                // Informar del éxito de la operación y la sessionKey obtenida
+                System.out.println("Login successful. SessionKey: " + sessionKey);
+                success = true;
+			}
+			else {
+            // Avisar del error en caso de respuesta distinta de "loginok"
+            System.err.println("Error: " + messageFromServer);
+            success = false;
+			} 
+		} catch (IOException e) {
+			System.err.println("Error durante el login");
+		}
 		// TODO: 7.Devolver éxito/fracaso de la operación
-
-
-
 		return success;
 	}
 
@@ -218,8 +238,6 @@ public class DirectoryConnector {
 		String[] userlist = null;
 		// TODO: Ver TODOs en logIntoDirectory y seguir esquema similar
 
-
-
 		return userlist;
 	}
 
@@ -230,8 +248,6 @@ public class DirectoryConnector {
 	 */
 	public boolean logoutFromDirectory() {
 		// TODO: Ver TODOs en logIntoDirectory y seguir esquema similar
-
-
 
 		return false;
 	}
@@ -247,8 +263,6 @@ public class DirectoryConnector {
 	public boolean registerServerPort(int serverPort) {
 		// TODO: Ver TODOs en logIntoDirectory y seguir esquema similar
 		boolean success = false;
-
-
 
 		return success;
 	}
@@ -266,8 +280,6 @@ public class DirectoryConnector {
 		InetSocketAddress serverAddr = null;
 		// TODO: Ver TODOs en logIntoDirectory y seguir esquema similar
 
-
-
 		return serverAddr;
 	}
 
@@ -283,8 +295,6 @@ public class DirectoryConnector {
 		boolean success = false;
 
 		// TODO: Ver TODOs en logIntoDirectory y seguir esquema similar
-
-
 
 		return success;
 	}
@@ -302,8 +312,6 @@ public class DirectoryConnector {
 		FileInfo[] filelist = null;
 		// TODO: Ver TODOs en logIntoDirectory y seguir esquema similar
 
-
-
 		return filelist;
 	}
 
@@ -320,12 +328,7 @@ public class DirectoryConnector {
 		String[] nicklist = null;
 		// TODO: Ver TODOs en logIntoDirectory y seguir esquema similar
 
-
-
 		return nicklist;
 	}
-
-
-
 
 }
