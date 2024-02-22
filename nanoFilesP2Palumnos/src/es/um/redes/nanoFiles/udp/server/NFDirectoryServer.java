@@ -7,6 +7,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Random;
 
 import es.um.redes.nanoFiles.application.NanoFiles;
@@ -124,10 +125,7 @@ public class NFDirectoryServer {
 				/*
 				 * (Boletín UDP) Construir una cadena a partir de los datos recibidos en
 				 * el buffer de recepción
-				 */
-				messageFromClient = new String(receptionBuffer,0, dataLength);
-				System.out.println("Mensaje CLI->SER: "+messageFromClient);
-				
+				 */				
 					if (NanoFiles.testMode) { // En modo de prueba (mensajes en "crudo", boletín UDP)
 					System.out.println("[testMode] Contents interpreted as " + dataLength + "-byte String: \""
 							+ messageFromClient + "\"");
@@ -146,7 +144,7 @@ public class NFDirectoryServer {
 						
 						// Enviamos el datagrama
 						DatagramPacket packetToClient = new DatagramPacket(dataToClient, dataToClient.length, clientAddr);
-						socket.send(packetToClient);
+						socket.send(packetToClient); 
 					}
 
 				} else { // Servidor funcionando en modo producción (mensajes bien formados)
@@ -159,50 +157,35 @@ public class NFDirectoryServer {
 					}
 
 					/*
-					 * TODO: Construir String partir de los datos recibidos en el datagrama. A
+					 * Construir String partir de los datos recibidos en el datagrama. A
 					 * continuación, imprimir por pantalla dicha cadena a modo de depuración.
 					 * Después, usar la cadena para construir un objeto DirMessage que contenga en
 					 * sus atributos los valores del mensaje (fromString).
 					 */
-					if(messageFromClient.contains("login")) {
-						String[] parts = messageFromClient.split("&");
-		                String nickname = parts[1];
+					messageFromClient = new String(receptionBuffer,0, dataLength);
+					System.out.println("Mensaje CLI->SER:\n"+messageFromClient);
+					DirMessage message = DirMessage.fromString(messageFromClient);
 					
-		                if(nicks.containsKey(nickname)) {
-		                	String messageToClient = "login_failed:-1";
-							byte[] dataToClient = messageToClient.getBytes();
-							
-							// Enviamos el datagrama
-							DatagramPacket packetToClient = new DatagramPacket(dataToClient, dataToClient.length, clientAddr);
-							socket.send(packetToClient);
-		                }
-		                else {
-		                	int sessionKey = random.nextInt(10000);
-			                nicks.put(nickname, sessionKey);
-							
-							String messageToClient = "loginok&" + sessionKey;
-							// Obtenemos el array de bytes en que se codifica este string
-							byte[] dataToClient = messageToClient.getBytes();
-							
-							// Enviamos el datagrama
-							DatagramPacket packetToClient = new DatagramPacket(dataToClient, dataToClient.length, clientAddr);
-							socket.send(packetToClient);
-		                }
-						
-					}
 					
 					/*
-					 * TODO: Llamar a buildResponseFromRequest para construir, a partir del objeto
+					 * Llamar a buildResponseFromRequest para construir, a partir del objeto
 					 * DirMessage con los valores del mensaje de petición recibido, un nuevo objeto
 					 * DirMessage con el mensaje de respuesta a enviar. Los atributos del objeto
 					 * DirMessage de respuesta deben haber sido establecidos con los valores
 					 * adecuados para los diferentes campos del mensaje (operation, etc.)
 					 */
+					DirMessage response = buildResponseFromRequest(message, clientAddr);
+					
 					/*
-					 * TODO: Convertir en string el objeto DirMessage con el mensaje de respuesta a
+					 * Convertir en string el objeto DirMessage con el mensaje de respuesta a
 					 * enviar, extraer los bytes en que se codifica el string (getBytes), y
 					 * finalmente enviarlos en un datagrama
 					 */
+					String messageToClient = response.toString();
+					byte[] dataToClient = messageToClient.getBytes();
+					
+					DatagramPacket packetToClient = new DatagramPacket(dataToClient, dataToClient.length, clientAddr);
+					socket.send(packetToClient);
 
 				}
 			} else {
@@ -214,39 +197,71 @@ public class NFDirectoryServer {
 
 	private DirMessage buildResponseFromRequest(DirMessage msg, InetSocketAddress clientAddr) {
 		/*
-		 * TODO: Construir un DirMessage con la respuesta en función del tipo de mensaje
+		 * Construir un DirMessage con la respuesta en función del tipo de mensaje
 		 * recibido, leyendo/modificando según sea necesario los atributos de esta clase
 		 * (el "estado" guardado en el directorio: nicks, sessionKeys, servers,
 		 * files...)
 		 */
 		String operation = msg.getOperation();
-
 		DirMessage response = null;
 
 		switch (operation) {
 		case DirMessageOps.OPERATION_LOGIN: {
 			String username = msg.getNickname();
-
+			
 			/*
-			 * TODO: Comprobamos si tenemos dicho usuario registrado (atributo "nicks"). Si
-			 * no está, generamos su sessionKey (número aleatorio entre 0 y 1000) y añadimos
+			 * Comprobamos si tenemos dicho usuario registrado (atributo "nicks"). Si
+			 * no está, generamos su sessionKey (número aleatorio entre 0 y 10000) y añadimos
 			 * el nick y su sessionKey asociada. NOTA: Puedes usar random.nextInt(10000)
 			 * para generar la session key
 			 */
-			/*
-			 * TODO: Construimos un mensaje de respuesta que indique el éxito/fracaso del
-			 * login y contenga la sessionKey en caso de éxito, y lo devolvemos como
-			 * resultado del método.
-			 */
-			/*
-			 * TODO: Imprimimos por pantalla el resultado de procesar la petición recibida
+            if(nicks.containsKey(username)) {				
+                response = new DirMessage(DirMessageOps.OPERATION_LOGIN_OK);
+                response.setSuccess("ERROR: nickname duplicado.");
+                response.setSessionKey("-1");
+				
+            }
+            else {
+            	int sessionKey = random.nextInt(10000);
+                nicks.put(username, sessionKey);
+				
+                /*
+    			 * Construimos un mensaje de respuesta que indique el éxito/fracaso del
+    			 * login y contenga la sessionKey en caso de éxito, y lo devolvemos como
+    			 * resultado del método.
+    			 */
+                response = new DirMessage(DirMessageOps.OPERATION_LOGIN_OK);
+                response.setSuccess("true");
+                response.setSessionKey(sessionKey+"");
+            
+            }
+            /*
+			 * Imprimimos por pantalla el resultado de procesar la petición recibida
 			 * (éxito o fracaso) con los datos relevantes, a modo de depuración en el
 			 * servidor
 			 */
+            System.out.println("SUCCESS: " + response.getSuccess());
+            System.out.println("SESSION KEY: " + response.getSessionKey());
 
 			break;
 		}
-
+		
+		case DirMessageOps.OPERATION_LOGOUT:
+			String sessionkey = msg.getSessionKey();
+			
+			for (Map.Entry<String, Integer> nick : nicks.entrySet()) {
+			    String clave = nick.getValue()+"";
+				if(clave.equals(sessionkey)) {
+			    	nicks.remove(nick.getKey());
+			    	response = new DirMessage(DirMessageOps.OPERATION_LOGOUT_OK);
+	                response.setSuccess("true");
+	                return response;
+			    } 
+			}
+			response = new DirMessage(DirMessageOps.OPERATION_LOGOUT_OK);
+            response.setSuccess("ERROR: No está registrado aun");
+            break;
+            
 		default:
 			System.out.println("Unexpected message operation: \"" + operation + "\"");
 		}

@@ -83,14 +83,12 @@ public class NFControllerLogicDir {
 	 */
 	public boolean doLogout() {
 		/*
-		 * TODO: Comunicarse con el directorio (a través del directoryConnector) para
+		 * Comunicarse con el directorio (a través del directoryConnector) para
 		 * dar de baja a este usuario. Se debe enviar la clave de sesión para
 		 * identificarse. Devolver éxito/fracaso de la operación.
 		 */
-		boolean result = false;
-
-
-
+		boolean result= false;
+		result = directoryConnector.logoutFromDirectory();
 		return result;
 	}
 

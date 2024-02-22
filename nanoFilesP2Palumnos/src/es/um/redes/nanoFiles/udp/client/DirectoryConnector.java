@@ -185,44 +185,46 @@ public class DirectoryConnector {
 	public boolean logIntoDirectory(String nickname) throws IOException {
 		assert (sessionKey == INVALID_SESSION_KEY);
 		boolean success = false;
-		// TODO: 1.Crear el mensaje a enviar (objeto DirMessage) con atributos adecuados
+		// 1.Crear el mensaje a enviar (objeto DirMessage) con atributos adecuados
 		// (operation, etc.) NOTA: Usar como operaciones las constantes definidas en la
-		// clase
-		// DirMessageOps
-		// TODO: 2.Convertir el objeto DirMessage a enviar a un string (método toString)
-		// TODO: 3.Crear un datagrama con los bytes en que se codifica la cadena
-		String loginMessage = "login&" + nickname;
+		// clase DirMessageOps
+		DirMessage message = new DirMessage(DirMessageOps.OPERATION_LOGIN);
+		message.setNickname(nickname);
+		
+		// 2.Convertir el objeto DirMessage a enviar a un string (método toString)
+		String loginMessage = message.toString();
+		
+		// 3.Crear un datagrama con los bytes en que se codifica la cadena
 		byte[] menssageToServer = loginMessage.getBytes();
 
-		// TODO: 4.Enviar datagrama y recibir una respuesta (sendAndReceiveDatagrams).
+		// 4.Enviar datagrama y recibir una respuesta (sendAndReceiveDatagrams).
 		try {
 			byte[] responseData = sendAndReceiveDatagrams(menssageToServer);
-			// TODO: 5.Convertir respuesta recibida en un objeto DirMessage (método
+			// 5.Convertir respuesta recibida en un objeto DirMessage (método
 			// DirMessage.fromString)
-			String messageFromServer = new String(responseData, 0, responseData.length);
-			System.out.println("Mensaje SER->CLI: " + messageFromServer);
-			// TODO: 6.Extraer datos del objeto DirMessage y procesarlos (p.ej., sessionKey)
-			if (messageFromServer.startsWith("loginok&")) {
-                // Extraer y convertir la sessionKey a entero
-                String[] parts = messageFromServer.split("&");
-                int receivedSessionKey = Integer.parseInt(parts[1]);
-
-                // Guardar la sessionKey obtenida en el atributo sessionKey
-                sessionKey = receivedSessionKey;
-
-                // Informar del éxito de la operación y la sessionKey obtenida
-                System.out.println("Login successful. SessionKey: " + sessionKey);
-                success = true;
+			String messageFromServer = new String(responseData, 0, responseData.length);			
+			DirMessage response = DirMessage.fromString(messageFromServer);
+			// 6.Extraer datos del objeto DirMessage y procesarlos (p.ej., sessionKey)
+			
+			switch(response.getOperation()) {
+			case DirMessageOps.OPERATION_LOGIN_OK:
+				if(response.getSuccess().equals("true"))
+					success = true;
+				else
+					System.out.println(response.getSuccess());
+				this.sessionKey = Integer.parseInt(response.getSessionKey()); 
+	            System.out.println("SUCCESS: " + success);
+	            System.out.println("SESSION KEY: " + sessionKey);
+				break;
+			default:
+				System.out.println(response.getOperation());
+				System.out.println("Respuesta no entendida");
 			}
-			else {
-            // Avisar del error en caso de respuesta distinta de "loginok"
-            System.err.println("Error: " + messageFromServer);
-            success = false;
-			} 
+		
 		} catch (IOException e) {
 			System.err.println("Error durante el login");
 		}
-		// TODO: 7.Devolver éxito/fracaso de la operación
+		// 7.Devolver éxito/fracaso de la operación
 		return success;
 	}
 
@@ -247,9 +249,51 @@ public class DirectoryConnector {
 	 * @return Verdadero si el directorio eliminó a este usuario exitosamente
 	 */
 	public boolean logoutFromDirectory() {
-		// TODO: Ver TODOs en logIntoDirectory y seguir esquema similar
+		assert (sessionKey == INVALID_SESSION_KEY);
+		boolean success = false;
+		// 1.Crear el mensaje a enviar (objeto DirMessage) con atributos adecuados
+		// (operation, etc.) NOTA: Usar como operaciones las constantes definidas en la
+		// clase DirMessageOps
+		DirMessage message = new DirMessage(DirMessageOps.OPERATION_LOGOUT);
+		message.setSessionKey(this.sessionKey+"");
+		
+		// 2.Convertir el objeto DirMessage a enviar a un string (método toString)
+		String loginMessage = message.toString();
+		
+		// 3.Crear un datagrama con los bytes en que se codifica la cadena
+		byte[] menssageToServer = loginMessage.getBytes();
 
-		return false;
+		// 4.Enviar datagrama y recibir una respuesta (sendAndReceiveDatagrams).
+		try {
+			byte[] responseData = sendAndReceiveDatagrams(menssageToServer);
+			// 5.Convertir respuesta recibida en un objeto DirMessage (método
+			// DirMessage.fromString)
+			String messageFromServer = new String(responseData, 0, responseData.length);			
+			DirMessage response = DirMessage.fromString(messageFromServer);
+			// 6.Extraer datos del objeto DirMessage y procesarlos (p.ej., sessionKey)
+			switch(response.getOperation()) {
+			case DirMessageOps.OPERATION_LOGOUT_OK:
+				if(response.getSuccess().equals("true"))
+					success = true;
+				else
+					System.out.println(response.getSuccess());
+				this.sessionKey = -1; 
+	            System.out.println("SUCCESS: " + success);
+				break;
+			default:
+				System.out.println(response.getOperation());
+				System.out.println("Respuesta no entendida");
+			}
+		
+		} catch (IOException e) {
+			System.err.println("Error durante el logout");
+		}
+		finally {
+			// Restablecer las credenciales independientemente de si la operación fue exitosa o no
+	        sessionKey = INVALID_SESSION_KEY;
+		}
+		// 7.Devolver éxito/fracaso de la operación
+		return success;
 	}
 
 	/**

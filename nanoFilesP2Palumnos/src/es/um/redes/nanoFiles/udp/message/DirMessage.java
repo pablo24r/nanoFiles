@@ -25,14 +25,14 @@ public class DirMessage {
 	/**
 	 * Nombre del campo que define el tipo de mensaje (primera línea)
 	 */
-	private static final String FIELDNAME_OPERATION = "operation";
 	/*
-	 * TODO: Definir de manera simbólica los nombres de todos los campos que pueden
+	 * Definir de manera simbólica los nombres de todos los campos que pueden
 	 * aparecer en los mensajes de este protocolo (formato campo:valor)
 	 */
-
-
-
+	private static final String FIELDNAME_OPERATION = "operation";
+	private static final String FIELDNAME_NICKNAME = "nickname";
+	private static final String FIELDNAME_SUCCESS = "success";
+	private static final String FIELDNAME_SESSIONKEY = "sessionkey";
 	/**
 	 * Tipo del mensaje, de entre los tipos definidos en PeerMessageOps.
 	 */
@@ -42,42 +42,20 @@ public class DirMessage {
 	 * diferentes mensajes de este protocolo.
 	 */
 	private String nickname;
-
-
-
+	private String success;
+	private String sessionKey;
 
 	public DirMessage(String op) {
 		operation = op;
 	}
 
-
-
-
 	/*
-	 * TODO: Crear diferentes constructores adecuados para construir mensajes de
+	 * TODO Crear diferentes constructores adecuados para construir mensajes de
 	 * diferentes tipos con sus correspondientes argumentos (campos del mensaje)
 	 */
-
-	public String getOperation() {
-		return operation;
+	public DirMessage() {
+		
 	}
-
-	public void setNickname(String nick) {
-
-
-
-		nickname = nick;
-	}
-
-	public String getNickname() {
-
-
-
-		return nickname;
-	}
-
-
-
 
 	/**
 	 * Método que convierte un mensaje codificado como una cadena de caracteres, a
@@ -101,8 +79,6 @@ public class DirMessage {
 		// Local variables to save data during parsing
 		DirMessage m = null;
 
-
-
 		for (String line : lines) {
 			int idx = line.indexOf(DELIMITER); // Posición del delimitador
 			String fieldName = line.substring(0, idx).toLowerCase(); // minúsculas
@@ -114,19 +90,24 @@ public class DirMessage {
 				m = new DirMessage(value);
 				break;
 			}
-
-
-
-
+			case FIELDNAME_NICKNAME:
+				assert (m != null);
+				m.setNickname(value);
+				break;
+			case FIELDNAME_SUCCESS:
+				assert (m != null);
+				m.setSuccess(value);
+				break;
+			case FIELDNAME_SESSIONKEY:
+				assert (m != null);
+				m.setSessionKey(value);
+				break;
 			default:
 				System.err.println("PANIC: DirMessage.fromString - message with unknown field name " + fieldName);
 				System.err.println("Message was:\n" + message);
 				System.exit(-1);
 			}
 		}
-
-
-
 
 		return m;
 	}
@@ -147,10 +128,70 @@ public class DirMessage {
 		 * concatenar el resto de campos necesarios usando los valores de los atributos
 		 * del objeto.
 		 */
+		String field, field1, field2;
+		String value, value1, value2;
 
-
+		switch (operation) {
+		case DirMessageOps.OPERATION_LOGIN:
+			field = FIELDNAME_NICKNAME;
+			value = getNickname();
+			sb.append(field + DELIMITER + value + END_LINE);
+			break;
+			
+		case DirMessageOps.OPERATION_LOGIN_OK:
+			field = FIELDNAME_SUCCESS;
+			value = getSuccess();
+			sb.append(field + DELIMITER + value + END_LINE);
+			field1 = FIELDNAME_SESSIONKEY;
+			value1 = getSessionKey();
+			sb.append(field1 + DELIMITER + value1 + END_LINE);
+			break;
+			
+		case DirMessageOps.OPERATION_LOGOUT:
+			field1 = FIELDNAME_SESSIONKEY;
+			value1 = getSessionKey();
+			sb.append(field1 + DELIMITER + value1 + END_LINE);
+			break;
+		case DirMessageOps.OPERATION_LOGOUT_OK:
+			field1 = FIELDNAME_SUCCESS;
+			value1 = getSuccess();
+			sb.append(field1 + DELIMITER + value1 + END_LINE);
+			break;
+		}
 
 		sb.append(END_LINE); // Marcamos el final del mensaje
 		return sb.toString();
+	}
+
+	// GETTERS AND SETTERS
+	public String getOperation() {
+		return operation;
+	}
+
+	public void setNickname(String nick) {
+
+		nickname = nick;
+	}
+
+	public String getNickname() {
+
+		return nickname;
+	}
+
+
+	public String getSessionKey() {
+		return sessionKey;
+	}
+
+	public void setSessionKey(String value) {
+		this.sessionKey = value;
+	}
+
+	public String getSuccess() {
+		return success;
+	}
+
+	public void setSuccess(String success) {
+		this.success = success;
 	}
 }

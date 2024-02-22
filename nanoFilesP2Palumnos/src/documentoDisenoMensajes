@@ -1,0 +1,16 @@
+LOGIN
+	operation: 	login
+	nickname: 	username
+
+LOGIN_OK
+	operation: 	login_ok
+	success:	true/false
+	sessionkey:	123
+	
+LOGOUT
+	operation:	logout
+	sessionkey:	123
+	
+LOGOUT_OK
+	operation:	logout_ok
+	success:	true/false
