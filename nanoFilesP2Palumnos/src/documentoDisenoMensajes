@@ -14,3 +14,10 @@ LOGOUT
 LOGOUT_OK
 	operation:	logout_ok
 	success:	true/false
+	
+USERLIST
+	operation:	userlist
+	
+USERLIST_OK
+	operation:	userlist_ok
+	userlist:	juan, leonor, pedro	

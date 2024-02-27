@@ -4,6 +4,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
+import java.util.List;
 
 import es.um.redes.nanoFiles.util.FileInfo;
 
@@ -33,6 +34,7 @@ public class DirMessage {
 	private static final String FIELDNAME_NICKNAME = "nickname";
 	private static final String FIELDNAME_SUCCESS = "success";
 	private static final String FIELDNAME_SESSIONKEY = "sessionkey";
+	private static final String FIELDNAME_USERLIST = "userlist";
 	/**
 	 * Tipo del mensaje, de entre los tipos definidos en PeerMessageOps.
 	 */
@@ -44,6 +46,7 @@ public class DirMessage {
 	private String nickname;
 	private String success;
 	private String sessionKey;
+	private String userlist;
 
 	public DirMessage(String op) {
 		operation = op;
@@ -102,6 +105,10 @@ public class DirMessage {
 				assert (m != null);
 				m.setSessionKey(value);
 				break;
+			case FIELDNAME_USERLIST:
+				assert (m != null);
+				m.setUserlist(value);
+				break;				
 			default:
 				System.err.println("PANIC: DirMessage.fromString - message with unknown field name " + fieldName);
 				System.err.println("Message was:\n" + message);
@@ -152,9 +159,22 @@ public class DirMessage {
 			value1 = getSessionKey();
 			sb.append(field1 + DELIMITER + value1 + END_LINE);
 			break;
+			
 		case DirMessageOps.OPERATION_LOGOUT_OK:
 			field1 = FIELDNAME_SUCCESS;
 			value1 = getSuccess();
+			sb.append(field1 + DELIMITER + value1 + END_LINE);
+			break;
+			
+		case DirMessageOps.OPERATION_USERLIST:
+			field1 = FIELDNAME_SESSIONKEY;
+			value1 = getSessionKey();
+			sb.append(field1 + DELIMITER + value1 + END_LINE);
+			break;
+			
+		case DirMessageOps.OPERATION_USERLIST_OK:
+			field1 = FIELDNAME_USERLIST;
+			value1 = getUserlist();
 			sb.append(field1 + DELIMITER + value1 + END_LINE);
 			break;
 		}
@@ -193,5 +213,13 @@ public class DirMessage {
 
 	public void setSuccess(String success) {
 		this.success = success;
+	}
+	
+	public String getUserlist() {
+		return userlist;
+	}
+
+	public void setUserlist(String userlist) {
+		this.userlist = userlist;
 	}
 }

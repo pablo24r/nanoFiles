@@ -97,12 +97,12 @@ public class NFControllerLogicDir {
 	 */
 	protected boolean getAndPrintUserList() {
 		/*
-		 * TODO: Obtener la lista de usuarios registrados. Comunicarse con el directorio
+		 * Obtener la lista de usuarios registrados. Comunicarse con el directorio
 		 * (a través del directoryConnector) para obtener la lista de nicks registrados
 		 * e imprimirla por pantalla. Devolver éxito/fracaso de la operación.
 		 */
 		boolean result = false;
-
+		result = directoryConnector.getUserlistFromDirectory();
 
 
 		return result;

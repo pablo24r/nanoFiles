@@ -291,11 +291,53 @@ public class DirectoryConnector {
 		finally {
 			// Restablecer las credenciales independientemente de si la operación fue exitosa o no
 	        sessionKey = INVALID_SESSION_KEY;
+	        
 		}
 		// 7.Devolver éxito/fracaso de la operación
 		return success;
 	}
 
+	/**
+	 * Método para obtener la lista de usuarios conectados
+	 * 
+	 * @return Verdadero si la operación fue exitosa
+	 */
+	public boolean getUserlistFromDirectory() {
+		boolean success = false;
+		// 1.Crear el mensaje a enviar (objeto DirMessage) con atributos adecuados
+		// (operation, etc.) NOTA: Usar como operaciones las constantes definidas en la
+		// clase DirMessageOps
+		DirMessage message = new DirMessage(DirMessageOps.OPERATION_USERLIST);
+		message.setSessionKey(this.sessionKey+"");
+		// 2.Convertir el objeto DirMessage a enviar a un string (método toString)
+		String getUsers = message.toString();
+		// 3.Crear un datagrama con los bytes en que se codifica la cadena
+		byte[] menssageToServer = getUsers.getBytes();
+		System.out.println("Cliente envía: " + getUsers);
+		// 4.Enviar datagrama y recibir una respuesta (sendAndReceiveDatagrams).
+		try {
+			byte[] responseData = sendAndReceiveDatagrams(menssageToServer);
+			// 5.Convertir respuesta recibida en un objeto DirMessage (método
+			// DirMessage.fromString)
+			String messageFromServer = new String(responseData, 0, responseData.length);			
+			DirMessage response = DirMessage.fromString(messageFromServer);
+			// 6.Extraer datos del objeto DirMessage y procesarlos (p.ej., sessionKey)
+			switch(response.getOperation()) {
+			case DirMessageOps.OPERATION_USERLIST_OK:
+				System.out.println(response.getUserlist());
+				break;
+			default:
+				System.out.println(response.getOperation());
+				System.out.println("Respuesta no entendida");
+			}
+		
+		} catch (IOException e) {
+			System.err.println("Error con la lista de usuarios.");
+		}
+		// 7.Devolver éxito/fracaso de la operación
+		return success;
+	}
+	
 	/**
 	 * Método para dar de alta como servidor de ficheros en el puerto indicado a
 	 * este peer.
