@@ -263,16 +263,13 @@ public class NFDirectoryServer {
 
 		case DirMessageOps.OPERATION_USERLIST:
 			int sessionkey = Integer.parseInt(msg.getSessionKey());
+			response = new DirMessage(DirMessageOps.OPERATION_USERLIST_OK);
 			if (nicks.containsValue(sessionkey)) {
-				response = new DirMessage(DirMessageOps.OPERATION_USERLIST_OK);
 				String userlist = "Usuarios en línea: ";
 				for (Map.Entry<String, Integer> nick : nicks.entrySet()) {
 					userlist += nick.getKey() + " ";
 				}
 				response.setUserlist(userlist);
-			}
-			else {
-				System.out.println("MMMMMMMMM"+sessionkey);
 			}
 			break;
 

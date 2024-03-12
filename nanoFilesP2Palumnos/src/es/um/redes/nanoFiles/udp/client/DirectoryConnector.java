@@ -49,8 +49,7 @@ public class DirectoryConnector {
 	private InetSocketAddress directoryAddress;
 
 	private int sessionKey = INVALID_SESSION_KEY;
-	private boolean successfulResponseStatus;
-	private String errorDescription;
+
 
 	public DirectoryConnector(String address) throws IOException {
 		/*

@@ -87,8 +87,13 @@ public class NFControllerLogicDir {
 		 * dar de baja a este usuario. Se debe enviar la clave de sesión para
 		 * identificarse. Devolver éxito/fracaso de la operación.
 		 */
+		if(directoryConnector==null) {
+			System.out.println("No está conectado a ningún directorio. Puede conectarse con: login <directorio> <nickname>.");
+			return false;
+		}
 		boolean result= false;
 		result = directoryConnector.logoutFromDirectory();
+		directoryConnector=null;
 		return result;
 	}
 
@@ -101,6 +106,10 @@ public class NFControllerLogicDir {
 		 * (a través del directoryConnector) para obtener la lista de nicks registrados
 		 * e imprimirla por pantalla. Devolver éxito/fracaso de la operación.
 		 */
+		if(directoryConnector==null) {
+			System.out.println("No está conectado a ningún directorio. Puede conectarse con: login <directorio> <nickname>.");
+			return false;
+		}
 		boolean result = false;
 		result = directoryConnector.getUserlistFromDirectory();
 
