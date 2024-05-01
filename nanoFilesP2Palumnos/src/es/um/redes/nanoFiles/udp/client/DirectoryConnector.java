@@ -237,7 +237,7 @@ public class DirectoryConnector {
 	 */
 	public String[] getUserList() {
 		String[] userlist = null;
-		// TODO: Ver TODOs en logIntoDirectory y seguir esquema similar
+		// Ver TODOs en logIntoDirectory y seguir esquema similar
 
 		return userlist;
 	}

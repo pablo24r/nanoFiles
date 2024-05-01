@@ -8,6 +8,9 @@ import java.net.InetSocketAddress;
 import java.util.LinkedList;
 import java.util.Random;
 
+import es.um.redes.nanoFiles.tcp.client.NFConnector;
+import es.um.redes.nanoFiles.tcp.server.NFServerSimple;
+
 
 
 
@@ -29,18 +32,26 @@ public class NFControllerLogicP2P {
 	 * 
 	 */
 	protected void foregroundServeFiles() {
-		/*
-		 * TODO: Crear objeto servidor NFServerSimple y ejecutarlo en primer plano.
-		 */
-		/*
-		 * TODO: Las excepciones que puedan lanzarse deben ser capturadas y tratadas en
-		 * este método. Si se produce una excepción de entrada/salida (error del que no
-		 * es posible recuperarse), se debe informar sin abortar el programa
-		 */
-
-
-
+	/*
+	 * Crear objeto servidor NFServerSimple y ejecutarlo en primer plano.
+	 */
+	
+	/*
+	 * Las excepciones que puedan lanzarse deben ser capturadas y tratadas en
+	 * este método. Si se produce una excepción de entrada/salida (error del que no
+	 * es posible recuperarse), se debe informar sin abortar el programa
+	 */
+	    try {
+	        NFServerSimple server = new NFServerSimple();
+	        server.run();
+	    } catch (IOException e) {
+	        // Imprimir la traza de la excepción
+	        e.printStackTrace();
+	        // Informar del error al usuario
+	        System.err.println("Error al ejecutar el servidor en primer plano: " + e.getMessage());
+	    }
 	}
+
 
 	/**
 	 * Método para ejecutar un servidor de ficheros en segundo plano. Debe arrancar
@@ -77,29 +88,44 @@ public class NFControllerLogicP2P {
 	 * @param localFileName  El nombre con el que se guardará el fichero descargado
 	 */
 	protected boolean downloadFileFromSingleServer(InetSocketAddress fserverAddr, String targetFileHash,
-			String localFileName) {
-		boolean result = false;
+		String localFileName) {
 		if (fserverAddr == null) {
 			System.err.println("* Cannot start download - No server address provided");
 			return false;
 		}
 		/*
-		 * TODO: Crear un objeto NFConnector para establecer la conexión con el peer
+		 * Crear un objeto NFConnector para establecer la conexión con el peer
 		 * servidor de ficheros, y usarlo para descargar el fichero mediante su método
 		 * "downloadFile". Se debe comprobar previamente si ya existe un fichero con el
 		 * mismo nombre en esta máquina, en cuyo caso se informa y no se realiza la
 		 * descarga. Si todo va bien, imprimir mensaje informando de que se ha
 		 * completado la descarga.
-		 */
-		/*
-		 * TODO: Las excepciones que puedan lanzarse deben ser capturadas y tratadas en
+
+		 * Las excepciones que puedan lanzarse deben ser capturadas y tratadas en
 		 * este método. Si se produce una excepción de entrada/salida (error del que no
 		 * es posible recuperarse), se debe informar sin abortar el programa
 		 */
+	    File file = new File(localFileName);
+	    if (file.exists()) {
+	        System.err.println("* File " + localFileName + " already exists.");
+	        return false;
+	    }
 
-
-
-		return result;
+	    NFConnector connector;
+	    try {
+	        connector = new NFConnector(fserverAddr);
+	        boolean downloaded = connector.downloadFile(targetFileHash, file);
+	        if (downloaded) {
+	            System.out.println("* File " + localFileName + " downloaded successfully.");
+	            return true;
+	        } else {
+	            System.err.println("* Failed to download file " + localFileName);
+	            return false;
+	        }
+	    } catch (IOException e) {
+	        System.err.println("* Error creating connector: " + e.getMessage());
+	        return false;
+	    }
 	}
 
 	/**

@@ -21,9 +21,6 @@ public class NFController {
 	 * cliente de directorio.
 	 */
 
-
-
-
 	/**
 	 * Shell para leer comandos de usuario de la entrada estándar
 	 */
@@ -235,8 +232,16 @@ public class NFController {
 			if (currentState != LOGGED_OUT) {
 				commandAllowed = false;
 				System.err.println("* You cannot login because you are not logged out from the directory");
+				
 			}
 			break;
+		case NFCommands.COM_LOGOUT:
+			if (currentState != LOGGED_IN) {
+				commandAllowed = false;
+				System.err.println("* You cannot logout because you are not logged from the directory");
+			}
+			break;
+			
 
 
 
@@ -264,9 +269,6 @@ public class NFController {
 		case NFCommands.COM_LOGOUT:
 			currentState = LOGGED_OUT;
 			break;
-
-
-
 		default:
 		}
 
