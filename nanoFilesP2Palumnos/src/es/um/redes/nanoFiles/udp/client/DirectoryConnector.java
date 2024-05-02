@@ -322,7 +322,8 @@ public class DirectoryConnector {
 			// 6.Extraer datos del objeto DirMessage y procesarlos (p.ej., sessionKey)
 			switch (response.getOperation()) {
 			case DirMessageOps.OPERATION_USERLIST_OK:
-				System.out.println(response.getUserlist());
+				String users = response.getUserlist().replace("\t", "\n");
+				System.out.println(users);
 				break;
 			default:
 				System.out.println(response.getOperation());

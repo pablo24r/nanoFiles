@@ -17,7 +17,7 @@ public class NFController {
 	private static final byte LOGGED_OUT = 0;
 	private static final byte LOGGED_IN = 1;
 	/*
-	 * TODO: Añadir más constantes que representen los estados del autómata del
+	 * Añadir más constantes que representen los estados del autómata del
 	 * cliente de directorio.
 	 */
 
@@ -217,7 +217,7 @@ public class NFController {
 	 */
 	public boolean canProcessCommandInCurrentState() {
 		/*
-		 * TODO: Para cada comando tecleado en el shell (currentCommand), comprobar
+		 * Para cada comando tecleado en el shell (currentCommand), comprobar
 		 * "currentState" para ver si dicho comando es válido según el estado actual del
 		 * autómata, ya que no todos los comandos serán válidos en cualquier estado.
 		 * Este método NO debe modificar clientStatus.
@@ -238,16 +238,16 @@ public class NFController {
 		case NFCommands.COM_LOGOUT:
 			if (currentState != LOGGED_IN) {
 				commandAllowed = false;
-				System.err.println("* You cannot logout because you are not logged from the directory");
+				System.err.println("* You cannot logout because you are not logged into the directory");
 			}
 			break;
-			
-
-
 
 		default:
-			// System.err.println("ERROR: undefined behaviour for " + currentCommand + "
-			// command!");
+			if (currentState != LOGGED_IN) {
+				commandAllowed = false;
+				System.err.println("* You are not logged into the directory. Use: login <directory_server> <nickname>" );
+			}
+			break;
 		}
 		return commandAllowed;
 	}

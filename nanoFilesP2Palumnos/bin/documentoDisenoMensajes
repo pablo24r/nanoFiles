@@ -27,27 +27,6 @@ PUBLISH
 	operation:	publish
 	sessionkey:	123
 
-PUBLISH_OK
-	operation:	publish_ok
-	success:	true/false
-
-FILELIST
-	operation:	filelist
-	sessionkey:	123
-	
-FILELIST_OK
-	operation:	filelist_ok
-	filelist:	file1: hash
-				file2: hash	
-
-SEARCH
-	operation:	search
-	sessionkey:	123
-	hash:		e12sfd12
-	
-SEARCH_OK
-	operation:	search_ok
-	userlist:	pablo raul pedro
 	
 NEWSERVER
 	operation:	newserver
@@ -67,9 +46,4 @@ GETADDRESS_OK
 	operation:	getaddress_ok
 	port:		10000	
 	
-
-
-
-
-
 
