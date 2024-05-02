@@ -1,5 +1,6 @@
 package es.um.redes.nanoFiles.tcp.server;
 
+import java.io.IOException;
 import java.net.Socket;
 
 public class NFServerThread extends Thread {
@@ -10,7 +11,19 @@ public class NFServerThread extends Thread {
 	 * (un socket distinto para "conversar" con un cliente)
 	 */
 
+	private Socket socket;
 
-
+	public NFServerThread(Socket socket) {
+		this.socket = socket;
+	}
+	
+	@Override
+    public void run() {
+        try {
+			NFServerComm.serveFilesToClient(socket);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    }
 
 }

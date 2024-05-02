@@ -35,6 +35,9 @@ public class DirMessage {
 	private static final String FIELDNAME_SUCCESS = "success";
 	private static final String FIELDNAME_SESSIONKEY = "sessionkey";
 	private static final String FIELDNAME_USERLIST = "userlist";
+	private static final String FIELDNAME_NEWSERVER = "newserver";
+	private static final String FIELDNAME_PORT = "port";
+
 	/**
 	 * Tipo del mensaje, de entre los tipos definidos en PeerMessageOps.
 	 */
@@ -47,6 +50,7 @@ public class DirMessage {
 	private String success;
 	private String sessionKey;
 	private String userlist;
+	private String port;
 
 	public DirMessage(String op) {
 		operation = op;
@@ -57,7 +61,7 @@ public class DirMessage {
 	 * diferentes tipos con sus correspondientes argumentos (campos del mensaje)
 	 */
 	public DirMessage() {
-		
+
 	}
 
 	/**
@@ -108,7 +112,16 @@ public class DirMessage {
 			case FIELDNAME_USERLIST:
 				assert (m != null);
 				m.setUserlist(value);
-				break;				
+				break;
+			case FIELDNAME_NEWSERVER:
+				assert (m != null);
+				m.setSuccess(value);
+				break;
+			case FIELDNAME_PORT:
+				assert (m != null);
+				m.setPort(value);
+				break;
+
 			default:
 				System.err.println("PANIC: DirMessage.fromString - message with unknown field name " + fieldName);
 				System.err.println("Message was:\n" + message);
@@ -135,8 +148,8 @@ public class DirMessage {
 		 * concatenar el resto de campos necesarios usando los valores de los atributos
 		 * del objeto.
 		 */
-		String field, field1, field2;
-		String value, value1, value2;
+		String field, field1;
+		String value, value1;
 
 		switch (operation) {
 		case DirMessageOps.OPERATION_LOGIN:
@@ -144,7 +157,7 @@ public class DirMessage {
 			value = getNickname();
 			sb.append(field + DELIMITER + value + END_LINE);
 			break;
-			
+
 		case DirMessageOps.OPERATION_LOGIN_OK:
 			field = FIELDNAME_SUCCESS;
 			value = getSuccess();
@@ -153,29 +166,59 @@ public class DirMessage {
 			value1 = getSessionKey();
 			sb.append(field1 + DELIMITER + value1 + END_LINE);
 			break;
-			
+
 		case DirMessageOps.OPERATION_LOGOUT:
 			field1 = FIELDNAME_SESSIONKEY;
 			value1 = getSessionKey();
 			sb.append(field1 + DELIMITER + value1 + END_LINE);
 			break;
-			
+
 		case DirMessageOps.OPERATION_LOGOUT_OK:
 			field1 = FIELDNAME_SUCCESS;
 			value1 = getSuccess();
 			sb.append(field1 + DELIMITER + value1 + END_LINE);
 			break;
-			
+
 		case DirMessageOps.OPERATION_USERLIST:
 			field1 = FIELDNAME_SESSIONKEY;
 			value1 = getSessionKey();
 			sb.append(field1 + DELIMITER + value1 + END_LINE);
 			break;
-			
+
 		case DirMessageOps.OPERATION_USERLIST_OK:
 			field1 = FIELDNAME_USERLIST;
 			value1 = getUserlist();
 			sb.append(field1 + DELIMITER + value1 + END_LINE);
+			break;
+
+		case DirMessageOps.OPERATION_NEWSERVER:
+			field = FIELDNAME_SESSIONKEY;
+			value = getSessionKey();
+			sb.append(field + DELIMITER + value + END_LINE);
+			field1 = FIELDNAME_PORT;
+			value1 = getPort();
+			sb.append(field1 + DELIMITER + value1 + END_LINE);
+			break;
+			
+		case DirMessageOps.OPERATION_NEWSERVER_OK:
+			field = FIELDNAME_SUCCESS;
+			value = getSuccess();
+			sb.append(field + DELIMITER + value + END_LINE);
+			break;
+			
+		case DirMessageOps.OPERATION_GETADDRESS:
+			field = FIELDNAME_SESSIONKEY;
+			value = getSessionKey();
+			sb.append(field + DELIMITER + value + END_LINE);
+			field1 = FIELDNAME_NICKNAME;
+			value1 = getNickname();
+			sb.append(field1 + DELIMITER + value1 + END_LINE);
+			break;
+
+		case DirMessageOps.OPERATION_GETADDRESS_OK:
+			field = FIELDNAME_PORT;
+			value = getPort();
+			sb.append(field + DELIMITER + value + END_LINE);
 			break;
 		}
 
@@ -198,7 +241,6 @@ public class DirMessage {
 		return nickname;
 	}
 
-
 	public String getSessionKey() {
 		return sessionKey;
 	}
@@ -214,7 +256,7 @@ public class DirMessage {
 	public void setSuccess(String success) {
 		this.success = success;
 	}
-	
+
 	public String getUserlist() {
 		return userlist;
 	}
@@ -222,4 +264,13 @@ public class DirMessage {
 	public void setUserlist(String userlist) {
 		this.userlist = userlist;
 	}
+
+	public String getPort() {
+		return port;
+	}
+
+	public void setPort(String port) {
+		this.port = port;
+	}
+
 }

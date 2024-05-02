@@ -20,7 +20,7 @@ public class NFDirectoryServer {
 	 * Número de puerto UDP en el que escucha el directorio
 	 */
 	public static final int DIRECTORY_PORT = 6868;
-	private static final int MAX_MSG_SIZE_BYTES = 48;
+	private static final int MAX_MSG_SIZE_BYTES = 240;
 	/**
 	 * Socket de comunicación UDP con el cliente UDP (DirectoryConnector)
 	 */
@@ -41,6 +41,7 @@ public class NFDirectoryServer {
 	 * funcionalidad del sistema nanoFilesP2P: ficheros publicados, servidores
 	 * registrados, etc.
 	 */
+	private HashMap<Integer, String> servers; // sessionkey - puerto
 
 	/**
 	 * Generador de claves de sesión aleatorias (sessionKeys)
@@ -74,6 +75,7 @@ public class NFDirectoryServer {
 
 		this.nicks = new HashMap<String, Integer>();
 		this.sessionKeys = new HashMap<Integer, String>();
+		this.servers = new HashMap<Integer, String>();
 
 		if (NanoFiles.testMode) {
 			if (socket == null || nicks == null || sessionKeys == null) {
@@ -261,7 +263,7 @@ public class NFDirectoryServer {
 			break;
 		}
 
-		case DirMessageOps.OPERATION_USERLIST:
+		case DirMessageOps.OPERATION_USERLIST: {
 			int sessionkey = Integer.parseInt(msg.getSessionKey());
 			response = new DirMessage(DirMessageOps.OPERATION_USERLIST_OK);
 			if (nicks.containsValue(sessionkey)) {
@@ -272,6 +274,33 @@ public class NFDirectoryServer {
 				response.setUserlist(userlist);
 			}
 			break;
+		}
+		
+		case DirMessageOps.OPERATION_NEWSERVER: {
+			int sessionkey = Integer.parseInt(msg.getSessionKey());
+			if (nicks.containsValue(sessionkey)) {
+				servers.put(sessionkey, msg.getPort());
+				response = new DirMessage(DirMessageOps.OPERATION_NEWSERVER_OK);
+				response.setSuccess("true");
+			}
+			break;
+		}
+		
+		case DirMessageOps.OPERATION_GETADDRESS:{
+			int sessionkey = Integer.parseInt(msg.getSessionKey());
+			if (nicks.containsValue(sessionkey)) {
+				String nickname = msg.getNickname();
+				for (Map.Entry<String, Integer> nick : nicks.entrySet()) {
+					if(nickname.equals(nick.getKey())) {
+						sessionkey = nick.getValue();
+					}
+				}
+				String port = servers.get(sessionkey);
+				response = new DirMessage(DirMessageOps.OPERATION_GETADDRESS_OK);
+				response.setPort(port);
+			}
+			break;
+		}
 
 		default:
 			System.out.println("Unexpected message operation: \"" + operation + "\"");

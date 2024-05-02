@@ -54,7 +54,7 @@ public class NFControllerLogicDir {
 	protected boolean doLogin(String directoryHostname, String nickname) {
 
 		/*
-		 * TODO: Debe crear un objeto DirectoryConnector a partir del parámetro
+		 * Debe crear un objeto DirectoryConnector a partir del parámetro
 		 * directoryHostname y guardarlo en el atributo correspondiente para que pueda
 		 * ser utilizado por el resto de métodos de esta clase. A continuación,
 		 * utilizarlo para comunicarse con el directorio y tratar de realizar el
@@ -145,14 +145,18 @@ public class NFControllerLogicDir {
 
 	public boolean registerFileServer(int serverPort) {
 		/*
-		 * TODO: Darse de alta en el directorio como servidor. Comunicarse con el
+		 * Darse de alta en el directorio como servidor. Comunicarse con el
 		 * directorio (a través del directoryConnector) para enviar el número de puerto
 		 * TCP en el que escucha el servidor de ficheros que habremos arrancado
 		 * previamente. Se debe enviar la clave de sesión para identificarse. Devolver
 		 * éxito/fracaso de la operación.
 		 */
-		boolean result = false;
-
+		if(directoryConnector==null) {
+			System.out.println("No está conectado a ningún directorio. Puede conectarse con: login <directorio> <nickname>.");
+			return false;
+		}
+		boolean result= false;
+		result = directoryConnector.registerServerPort(serverPort);
 
 
 		return result;
@@ -189,16 +193,14 @@ public class NFControllerLogicDir {
 	 */
 	private InetSocketAddress lookupServerAddrByUsername(String nickname) {
 		/*
-		 * TODO: Obtener IP:puerto de un servidor de ficheros a partir de su nickname.
+		 * Obtener IP:puerto de un servidor de ficheros a partir de su nickname.
 		 * Comunicarse con el directorio (a través del directoryConnector) para
 		 * preguntar la dirección de socket en la que el usuario con 'nickname' está
 		 * sirviendo ficheros. Si la operación fracasa (no se obtiene una respuesta con
 		 * IP:puerto válidos), se debe devolver null.
 		 */
 		InetSocketAddress serverAddr = null;
-
-
-
+		serverAddr = directoryConnector.lookupServerAddrByUsername(nickname);
 		return serverAddr;
 	}
 
@@ -248,7 +250,7 @@ public class NFControllerLogicDir {
 
 		} else {
 			/*
-			 * TODO: Si es un nickname, preguntar al directorio la IP:puerto asociada a
+			 * Si es un nickname, preguntar al directorio la IP:puerto asociada a
 			 * dicho peer servidor.
 			 */
 			fserverAddr = lookupServerAddrByUsername(serverNicknameOrSocketAddr);

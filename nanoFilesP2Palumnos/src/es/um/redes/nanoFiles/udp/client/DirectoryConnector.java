@@ -50,7 +50,6 @@ public class DirectoryConnector {
 
 	private int sessionKey = INVALID_SESSION_KEY;
 
-
 	public DirectoryConnector(String address) throws IOException {
 		/*
 		 * Convertir el nombre de host 'address' a InetAddress y guardar la dirección de
@@ -160,7 +159,7 @@ public class DirectoryConnector {
 		byte[] respuesta = sendAndReceiveDatagrams(menssage);
 
 		String messageFromServer = new String(respuesta, 0, respuesta.length);
-		//System.out.println("MENSAJE SER->CLI ES:" + messageFromServer);
+		// System.out.println("MENSAJE SER->CLI ES:" + messageFromServer);
 		return messageFromServer.equals("loginok");
 	}
 
@@ -189,10 +188,10 @@ public class DirectoryConnector {
 		// clase DirMessageOps
 		DirMessage message = new DirMessage(DirMessageOps.OPERATION_LOGIN);
 		message.setNickname(nickname);
-		
+
 		// 2.Convertir el objeto DirMessage a enviar a un string (método toString)
 		String loginMessage = message.toString();
-		
+
 		// 3.Crear un datagrama con los bytes en que se codifica la cadena
 		byte[] menssageToServer = loginMessage.getBytes();
 
@@ -201,25 +200,25 @@ public class DirectoryConnector {
 			byte[] responseData = sendAndReceiveDatagrams(menssageToServer);
 			// 5.Convertir respuesta recibida en un objeto DirMessage (método
 			// DirMessage.fromString)
-			String messageFromServer = new String(responseData, 0, responseData.length);			
+			String messageFromServer = new String(responseData, 0, responseData.length);
 			DirMessage response = DirMessage.fromString(messageFromServer);
 			// 6.Extraer datos del objeto DirMessage y procesarlos (p.ej., sessionKey)
-			
-			switch(response.getOperation()) {
+
+			switch (response.getOperation()) {
 			case DirMessageOps.OPERATION_LOGIN_OK:
-				if(response.getSuccess().equals("true"))
+				if (response.getSuccess().equals("true"))
 					success = true;
 				else
 					System.out.println(response.getSuccess());
-				this.sessionKey = Integer.parseInt(response.getSessionKey()); 
-	            System.out.println("SUCCESS: " + success);
-	            System.out.println("SESSION KEY: " + sessionKey);
+				this.sessionKey = Integer.parseInt(response.getSessionKey());
+				System.out.println("SUCCESS: " + success);
+				System.out.println("SESSION KEY: " + sessionKey);
 				break;
 			default:
 				System.out.println(response.getOperation());
 				System.out.println("Respuesta no entendida");
 			}
-		
+
 		} catch (IOException e) {
 			System.err.println("Error durante el login");
 		}
@@ -254,11 +253,11 @@ public class DirectoryConnector {
 		// (operation, etc.) NOTA: Usar como operaciones las constantes definidas en la
 		// clase DirMessageOps
 		DirMessage message = new DirMessage(DirMessageOps.OPERATION_LOGOUT);
-		message.setSessionKey(this.sessionKey+"");
-		
+		message.setSessionKey(this.sessionKey + "");
+
 		// 2.Convertir el objeto DirMessage a enviar a un string (método toString)
 		String loginMessage = message.toString();
-		
+
 		// 3.Crear un datagrama con los bytes en que se codifica la cadena
 		byte[] menssageToServer = loginMessage.getBytes();
 
@@ -267,30 +266,30 @@ public class DirectoryConnector {
 			byte[] responseData = sendAndReceiveDatagrams(menssageToServer);
 			// 5.Convertir respuesta recibida en un objeto DirMessage (método
 			// DirMessage.fromString)
-			String messageFromServer = new String(responseData, 0, responseData.length);			
+			String messageFromServer = new String(responseData, 0, responseData.length);
 			DirMessage response = DirMessage.fromString(messageFromServer);
 			// 6.Extraer datos del objeto DirMessage y procesarlos (p.ej., sessionKey)
-			switch(response.getOperation()) {
+			switch (response.getOperation()) {
 			case DirMessageOps.OPERATION_LOGOUT_OK:
-				if(response.getSuccess().equals("true"))
+				if (response.getSuccess().equals("true"))
 					success = true;
 				else
 					System.out.println(response.getSuccess());
-				this.sessionKey = -1; 
-	            System.out.println("SUCCESS: " + success);
+				this.sessionKey = -1;
+				System.out.println("SUCCESS: " + success);
 				break;
 			default:
 				System.out.println(response.getOperation());
 				System.out.println("Respuesta no entendida");
 			}
-		
+
 		} catch (IOException e) {
 			System.err.println("Error durante el logout");
-		}
-		finally {
-			// Restablecer las credenciales independientemente de si la operación fue exitosa o no
-	        sessionKey = INVALID_SESSION_KEY;
-	        
+		} finally {
+			// Restablecer las credenciales independientemente de si la operación fue
+			// exitosa o no
+			sessionKey = INVALID_SESSION_KEY;
+
 		}
 		// 7.Devolver éxito/fracaso de la operación
 		return success;
@@ -307,7 +306,7 @@ public class DirectoryConnector {
 		// (operation, etc.) NOTA: Usar como operaciones las constantes definidas en la
 		// clase DirMessageOps
 		DirMessage message = new DirMessage(DirMessageOps.OPERATION_USERLIST);
-		message.setSessionKey(this.sessionKey+"");
+		message.setSessionKey(this.sessionKey + "");
 		// 2.Convertir el objeto DirMessage a enviar a un string (método toString)
 		String getUsers = message.toString();
 		// 3.Crear un datagrama con los bytes en que se codifica la cadena
@@ -318,10 +317,10 @@ public class DirectoryConnector {
 			byte[] responseData = sendAndReceiveDatagrams(menssageToServer);
 			// 5.Convertir respuesta recibida en un objeto DirMessage (método
 			// DirMessage.fromString)
-			String messageFromServer = new String(responseData, 0, responseData.length);			
+			String messageFromServer = new String(responseData, 0, responseData.length);
 			DirMessage response = DirMessage.fromString(messageFromServer);
 			// 6.Extraer datos del objeto DirMessage y procesarlos (p.ej., sessionKey)
-			switch(response.getOperation()) {
+			switch (response.getOperation()) {
 			case DirMessageOps.OPERATION_USERLIST_OK:
 				System.out.println(response.getUserlist());
 				break;
@@ -329,14 +328,14 @@ public class DirectoryConnector {
 				System.out.println(response.getOperation());
 				System.out.println("Respuesta no entendida");
 			}
-		
+
 		} catch (IOException e) {
 			System.err.println("Error con la lista de usuarios.");
 		}
 		// 7.Devolver éxito/fracaso de la operación
 		return success;
 	}
-	
+
 	/**
 	 * Método para dar de alta como servidor de ficheros en el puerto indicado a
 	 * este peer.
@@ -346,9 +345,47 @@ public class DirectoryConnector {
 	 *         servidor.
 	 */
 	public boolean registerServerPort(int serverPort) {
-		// TODO: Ver TODOs en logIntoDirectory y seguir esquema similar
+		// Ver TODOs en logIntoDirectory y seguir esquema similar
 		boolean success = false;
+		// 1.Crear el mensaje a enviar (objeto DirMessage) con atributos adecuados
+		// (operation, etc.) NOTA: Usar como operaciones las constantes definidas en la
+		// clase DirMessageOps
+		DirMessage message = new DirMessage(DirMessageOps.OPERATION_NEWSERVER);
+		message.setSessionKey(this.sessionKey+"");
+		message.setPort(serverPort+"");
 
+		// 2.Convertir el objeto DirMessage a enviar a un string (método toString)
+		String newServerMessage = message.toString();
+
+		// 3.Crear un datagrama con los bytes en que se codifica la cadena
+		byte[] menssageToServer = newServerMessage.getBytes();
+
+		// 4.Enviar datagrama y recibir una respuesta (sendAndReceiveDatagrams).
+		try {
+			byte[] responseData = sendAndReceiveDatagrams(menssageToServer);
+			// 5.Convertir respuesta recibida en un objeto DirMessage (método
+			// DirMessage.fromString)
+			String messageFromServer = new String(responseData, 0, responseData.length);
+			DirMessage response = DirMessage.fromString(messageFromServer);
+			// 6.Extraer datos del objeto DirMessage y procesarlos (p.ej., sessionKey)
+
+			switch (response.getOperation()) {
+			case DirMessageOps.OPERATION_NEWSERVER_OK:
+				if (response.getSuccess().equals("true")) {
+					success = true;
+				} else {
+					System.out.println(response.getSuccess());
+				}
+				break;
+			default:
+				System.out.println(response.getOperation());
+				System.out.println("Respuesta no entendida");
+			}
+
+		} catch (IOException e) {
+			System.err.println("Error al conectar al añadir el servidor.");
+		}
+		// 7.Devolver éxito/fracaso de la operación
 		return success;
 	}
 
@@ -364,7 +401,45 @@ public class DirectoryConnector {
 	public InetSocketAddress lookupServerAddrByUsername(String nick) {
 		InetSocketAddress serverAddr = null;
 		// TODO: Ver TODOs en logIntoDirectory y seguir esquema similar
+		boolean success = false;
+		// 1.Crear el mensaje a enviar (objeto DirMessage) con atributos adecuados
+		// (operation, etc.) NOTA: Usar como operaciones las constantes definidas en la
+		// clase DirMessageOps
+		DirMessage message = new DirMessage(DirMessageOps.OPERATION_GETADDRESS);
+		message.setSessionKey(this.sessionKey+"");
+		message.setNickname(nick);
 
+		// 2.Convertir el objeto DirMessage a enviar a un string (método toString)
+		String newServerMessage = message.toString();
+
+		// 3.Crear un datagrama con los bytes en que se codifica la cadena
+		byte[] menssageToServer = newServerMessage.getBytes();
+
+		// 4.Enviar datagrama y recibir una respuesta (sendAndReceiveDatagrams).
+		try {
+			byte[] responseData = sendAndReceiveDatagrams(menssageToServer);
+			// 5.Convertir respuesta recibida en un objeto DirMessage (método
+			// DirMessage.fromString)
+			String messageFromServer = new String(responseData, 0, responseData.length);
+			DirMessage response = DirMessage.fromString(messageFromServer);
+			// 6.Extraer datos del objeto DirMessage y procesarlos (p.ej., sessionKey)
+
+			switch (response.getOperation()) {
+			case DirMessageOps.OPERATION_GETADDRESS_OK:
+				if (response.getPort() != null) {
+					int port = Integer.parseInt(response.getPort());
+					serverAddr = new InetSocketAddress(port);
+				}
+				break;
+			default:
+				System.out.println(response.getOperation());
+				System.out.println("Respuesta no entendida");
+			}
+
+		} catch (IOException e) {
+			System.err.println("Error al conectar al servidor " + nick);
+		}
+		// 7.Devolver éxito/fracaso de la operación
 		return serverAddr;
 	}
 

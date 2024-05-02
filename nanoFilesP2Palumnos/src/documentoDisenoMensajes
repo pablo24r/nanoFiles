@@ -48,6 +48,25 @@ SEARCH
 SEARCH_OK
 	operation:	search_ok
 	userlist:	pablo raul pedro
+	
+NEWSERVER
+	operation:	newserver
+	sessionkey: 123
+	port:		10000
+	
+NEWSERVER_OK
+	operation:	newserver_ok
+	success:	true/false
+	
+GETADDRESS
+	operation: getaddress
+	sessionkey:	123
+	nickname:	pablo
+	
+GETADDRESS_OK
+	operation:	getaddress_ok
+	port:		10000	
+	
 
 
 

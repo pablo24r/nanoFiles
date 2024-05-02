@@ -13,8 +13,9 @@ public class DirMessageOps {
 	public static final String OPERATION_LOGOUT_OK = "logout_ok";
 	public static final String OPERATION_USERLIST = "userlist";
 	public static final String OPERATION_USERLIST_OK = "userlist_ok";
-	
-
-
+	public static final String OPERATION_NEWSERVER = "newserver";
+	public static final String OPERATION_NEWSERVER_OK = "newserver_ok";
+	public static final String OPERATION_GETADDRESS= "getaddress";
+	public static final String OPERATION_GETADDRESS_OK = "getaddress_ok";
 
 }

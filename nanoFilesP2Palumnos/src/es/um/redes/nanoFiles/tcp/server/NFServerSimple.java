@@ -17,12 +17,14 @@ public class NFServerSimple {
 	private static final String STOP_SERVER_COMMAND = "fgstop";
 	private static final int PORT = 10000;
 	private ServerSocket serverSocket = null;
+	private int availablePort = 10000;
 
 	public NFServerSimple() throws IOException {
 		/*
 		 * Crear una direción de socket a partir del puerto especificado
 		 */
-		InetSocketAddress serverSocketAddress = new InetSocketAddress(PORT);
+		availablePort = findAvailablePort(PORT);
+		InetSocketAddress serverSocketAddress = new InetSocketAddress(availablePort);
 		
 		/*
 		 * Crear un socket servidor y ligarlo a la dirección de socket anterior
@@ -31,7 +33,7 @@ public class NFServerSimple {
 		
 		// After creating the server socket, bind to the listening port
 		serverSocket.bind(serverSocketAddress);
-		System.out.println("\nServer is listening on port " + PORT);
+		System.out.println("\nServer is listening on port " + availablePort);
 	}
 
 	/**
@@ -74,4 +76,28 @@ public class NFServerSimple {
 		
 		System.out.println("NFServerSimple stopped. Returning to the nanoFiles shell...");
 	}
+	
+    // Método para encontrar un puerto disponible
+    private int findAvailablePort(int initialPort) {
+        int port = initialPort;
+        while (!isPortAvailable(port)) {
+            port++;
+        }
+        return port;
+    }
+    
+    // Método para verificar si un puerto está disponible
+    private boolean isPortAvailable(int port) {
+        try {
+            new ServerSocket(port).close();
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+    
+    public int getPort() {
+    	return availablePort;
+    }
+    
 }
