@@ -311,7 +311,6 @@ public class DirectoryConnector {
 		String getUsers = message.toString();
 		// 3.Crear un datagrama con los bytes en que se codifica la cadena
 		byte[] menssageToServer = getUsers.getBytes();
-		System.out.println("Cliente envía: " + getUsers);
 		// 4.Enviar datagrama y recibir una respuesta (sendAndReceiveDatagrams).
 		try {
 			byte[] responseData = sendAndReceiveDatagrams(menssageToServer);

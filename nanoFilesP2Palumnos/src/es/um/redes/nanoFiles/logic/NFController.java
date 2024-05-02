@@ -2,7 +2,6 @@ package es.um.redes.nanoFiles.logic;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.Arrays;
 import java.util.LinkedList;
 
 import es.um.redes.nanoFiles.application.NanoFiles;

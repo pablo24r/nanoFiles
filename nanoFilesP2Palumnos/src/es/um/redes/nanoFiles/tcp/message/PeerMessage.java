@@ -145,7 +145,7 @@ public class PeerMessage {
 			byte datos[] = new byte[(int) message.getSize()];
 			dis.readFully(datos);
 			message.setBytes(datos);
-			System.out.println(new String(message.getBytes()));
+			// System.out.println(new String(message.getBytes()));
 			break;
 		}
 		case 4:{
