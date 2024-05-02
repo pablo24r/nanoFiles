@@ -1,0 +1,75 @@
+LOGIN
+	operation: 	login
+	nickname: 	username
+
+LOGIN_OK
+	operation: 	login_ok
+	success:	true/false
+	sessionkey:	123
+	
+LOGOUT
+	operation:	logout
+	sessionkey:	123
+	
+LOGOUT_OK
+	operation:	logout_ok
+	success:	true/false
+	
+USERLIST
+	operation:	userlist
+	sessionkey:	123
+	
+USERLIST_OK
+	operation:	userlist_ok
+	userlist:	juan, leonor, pedro	
+	
+PUBLISH
+	operation:	publish
+	sessionkey:	123
+
+PUBLISH_OK
+	operation:	publish_ok
+	success:	true/false
+
+FILELIST
+	operation:	filelist
+	sessionkey:	123
+	
+FILELIST_OK
+	operation:	filelist_ok
+	filelist:	file1: hash
+				file2: hash	
+
+SEARCH
+	operation:	search
+	sessionkey:	123
+	hash:		e12sfd12
+	
+SEARCH_OK
+	operation:	search_ok
+	userlist:	pablo raul pedro
+	
+NEWSERVER
+	operation:	newserver
+	sessionkey: 123
+	port:		10000
+	
+NEWSERVER_OK
+	operation:	newserver_ok
+	success:	true/false
+	
+GETADDRESS
+	operation: getaddress
+	sessionkey:	123
+	nickname:	pablo
+	
+GETADDRESS_OK
+	operation:	getaddress_ok
+	port:		10000	
+	
+
+
+
+
+
+
